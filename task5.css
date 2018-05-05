@@ -1,0 +1,18 @@
+body{
+	font-family:"Microsoft YaHei";
+}
+.basic p{
+	display: inline-block;
+	margin-right:15px;
+}
+.massege p{
+	display: inline-block;
+	margin-right:15px;
+}
+span{
+	margin-right: 5px;
+	font-weight:bold; 
+}
+.email:first-letter{
+	text-transform:uppercase;
+}

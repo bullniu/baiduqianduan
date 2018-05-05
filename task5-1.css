@@ -1,0 +1,54 @@
+body{
+	font-family:"Microsoft YaHei";
+	display: table-row
+	
+
+}
+.td{
+	display: table-cell;
+	padding-top:30px;
+	padding-left: 30px;
+	padding-right: 30px;
+	background-color:green;
+	color:white;
+}
+.sub-table{
+	display:table;
+} 
+.sub-tr{
+	display: table-row;
+	height: 30px;
+}
+h1{
+	display: table-row;
+}
+/*h1{
+	display:table-cell;
+	border-collapse: collapse;
+	border-width: 20px dotted;
+	padding-top:30px;
+	padding-left: 30px;
+	padding-right: 30px;
+	background-color:green;
+	color:white;
+}*/
+section{
+	display:table-cell;
+	padding-left: 20px;
+
+}
+.basic p{
+	display: inline-block;
+	margin-right:15px;
+}
+.massege p{
+	display: inline-block;
+	margin-right:15px;
+}
+span{
+	margin-right: 5px;
+	font-weight:bold; 
+}
+.email:first-letter{
+	text-transform:uppercase;
+}

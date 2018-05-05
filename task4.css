@@ -1,0 +1,90 @@
+table{
+  
+ text-align:center;
+  margin:0px;
+  color:#f7fa93;
+}
+span{
+  font-weight:bold;
+}
+h1{
+  font-size:32px;
+  text-align:center;
+  letter-spacing:10px;
+  text-shadow:2px 2px 2px grey, 
+}
+h1::first-letter{
+  color:#f7fa93;
+}
+table .point{
+  font-weight:bold;
+}/*其中空格的意思是table元素下class属性为point的元素不论是否为直接子元素*/
+table>#weixin{
+  text-decoration:underline;
+}/*这个选择器的意思为：选择table元素下id属性为weixin的直接后代*/
+table [title$="me"]{
+  font-style:italic;
+}/*运用属性选择器：其意思为table元素下含有title属性并且属性值以“me”结尾的元素。*/
+.information{
+ background-image:url(task4img/power.gif);
+ background-repeat:no-repeat;
+background-position:151.59% 34.9%;
+background-color: #0f4426;
+}
+.exprience{
+  background-image:url(task4img/free.jpg);
+  background-repeat:no-repeat;
+   background-position:150% 34.9%;
+   background-color: #072c47;
+}
+h4{
+  background-image:linear-gradient(to bottom,yellow,#f7fa93 80%,orange);
+  border-bottom:3px solid #f7fa93;
+  display: inline-block;
+  margin:15px 0px 0px 0px;
+  color:grey;
+}
+.two{
+  background-image:repeating-linear-gradient(to bottom,yellow,#f7fa93 30%,orange 40%,#f7fa93);
+}
+ul{
+  list-style-type: none;
+  border: 1px solid black;
+  list-style-position: inside;/**/  
+ /* list-style-image: url(task4img/backpack.gif);*/
+}
+ul li{
+
+  padding-left:20px;
+  background-image: url(task4img/backpack.gif);
+  background-repeat:no-repeat;
+  background-position:0 0px;
+}/*通过背景图片来实现列表的序号样式，更加的自由。*/
+li:nth-of-type(2n+1){
+background-color: grey;
+}
+li:nth-of-type(2n){
+  background-color: #ccc;
+
+}
+.xuhao{
+  background-repeat: no-repeat;
+  background-image: url(task4img/backpack.gif);
+  padding-left:15px;
+}
+p{
+  color:orange;
+}
+address{
+  display:inline;
+}
+a{
+  text-decoration:none;
+
+}
+a:hover{
+  color:orange;
+}
+a:visited{
+  color:grey;
+}
