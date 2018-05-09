@@ -1,0 +1,20 @@
+body{
+	position:relative;
+}
+aside{
+	position:absolute;
+	
+	width:30%;
+	padding-top: 900px;
+	background-color: orange;
+	box-sizing: border-box;
+}
+section{
+	position:absolute;
+	left:30%;
+	width:70%;
+	padding-top:900px;
+	background-color: orange;
+	border-left:5px solid #cccccc;
+	box-sizing: border-box;
+}

@@ -1,0 +1,19 @@
+.flex{
+	position:relative;
+}
+aside{
+	position:absolute;
+	width:300px;
+	padding-top: 900px;
+	background-color: orange;
+	box-sizing: border-box;
+}
+section{
+
+	
+	margin-left: 300px;
+	padding-top:900px;
+	background-color:red;
+	border-left:5px solid #cccccc;
+	box-sizing: border-box;
+}

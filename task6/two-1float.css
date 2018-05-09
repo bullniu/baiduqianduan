@@ -1,0 +1,15 @@
+aside{
+	float: left;
+	width:30%;
+	padding-top: 900px;
+	background-color: orange;
+	box-sizing: border-box;
+}
+section{
+	width:70%;
+	padding-top:900px;
+	background-color: orange;
+	margin-left:30%;
+	border-left:5px solid #cccccc;
+	box-sizing: border-box;
+}

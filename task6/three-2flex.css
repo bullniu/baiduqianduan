@@ -1,0 +1,23 @@
+.flex{
+	display:flex;
+}
+aside{
+	width:300px;
+	padding-top: 900px;
+	background-color: orange;
+	box-sizing: border-box;
+}
+section{
+	width:100%;
+	padding-top:900px;
+	background-color:red;
+	border-left:5px solid #cccccc;
+	
+	box-sizing: border-box;
+}
+.right{
+	width: 300px;
+	padding-top:900px;
+	background-color:blue;
+	box-sizing: border-box;
+}

@@ -1,0 +1,21 @@
+.flex{
+	display:flex;
+}
+aside{
+
+	
+	
+	width:30%;
+	padding-top: 900px;
+	background-color: orange;
+	box-sizing: border-box;
+}
+section{
+	
+	
+	width:70%;
+	padding-top:900px;
+	background-color: orange;
+	border-left:5px solid #cccccc;
+	box-sizing: border-box;
+}

@@ -1,0 +1,126 @@
+body{
+	background-color: #808080;
+}
+header{
+	height: 90px;
+	background-color: #333333;
+}
+.mid{
+	width:960px;
+	margin: 0 auto;
+}
+.lianjie{
+	float: right;
+}
+a{
+	color:white;
+	margin:5px;
+}
+h1{
+	color:white;
+	padding-top:20px;
+	margin:0px;
+}
+.midbanner{
+	position:relative;
+	height: 300px;
+	background-color:#66bb33;
+}
+.banner{
+	display: table;
+	position:absolute;
+	height: 40px;
+	top:250px;
+	left:87%;
+	margin:0px;
+	/*line-height: 16px;*/
+}
+.banner li{
+	/*margin-top:16px;*/
+	/*display: table-cell;
+	vertical-align: bottom;*/
+	/*margin-right: 6px;*/
+	position: absolute;
+	border:1px solid #335e1a;
+	list-style-type:none;
+	display: inline-block;
+	background-color: #b2dd99;
+	/*transition: height 1s;*/
+	}
+.banner li:nth-of-type(1){
+	right:56px;
+}
+.banner li:nth-of-type(2){
+	right:30px;
+}
+.banner li:nth-of-type(3){
+	right:5px;
+}
+.banner li:hover{
+	position:absolute;
+	bottom:0px;
+	background-color: white;
+	padding-top: 16px;
+	transform: translateY(-17px);
+}
+.banner a{
+	color:black;
+	text-decoration:none;
+}
+.daohang{
+	background-color: white;
+	list-style:none;
+	margin:0px;
+	height:60px;
+	border-bottom: 1px #cccccc solid;
+	padding-top:17px;
+	padding-left:200px;
+	box-sizing: border-box;
+}
+.daohang li{
+	display:inline-block;
+	padding:10px;
+	background-color:#eeeeee;
+	float: left;
+	border-top:1px #cccccc solid;
+	border-left:1px #cccccc solid;
+	border-right:1px #cccccc solid;
+	border-bottom: 1px #cccccc solid;
+	border-top-left-radius:10px;
+	border-top-right-radius: 10px;
+	margin:0px;
+	
+}
+.daohang li:hover{
+	background-color: white;
+	background-clip: border-box;
+	border-bottom:1px white solid;
+	
+}
+section{
+	background-color: white;
+
+}
+.content{
+	border:3px white solid;
+	display: flex;
+	width: 100%;
+	box-sizing:border-box;
+	flex-direction:column;
+}
+.content>div{
+	margin-top:20px;
+	margin-left:190px;
+	margin-right:190px;
+	display: flex;
+	justify-content:space-around;
+}
+.content>div>div{
+	padding:90px;
+	border:1px #cccccc solid;
+	margin:10px;
+	flex-grow:1;
+}
+h5{
+	text-align: center;
+}
