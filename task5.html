@@ -8,13 +8,26 @@
 	<meta charset="utf-8">
 </head>
 <body>
+<script type="text/javascript">
+	function special(){
+		var boxs=document.getElementById("special");
+		boxs.style.display="block";
+	}
+	function off(){
+		var boxs=document.getElementById("special");
+		boxs.style.display="none";
+	}
+</script>
 <div class="td">
 		<div class="sub-table">
 			<div class="sub-tr"></div>	
-			<h1>简历</h1>
+			<h1 onclick="special()" title="点击查看我的特殊简介">简历</h1>
 		</div>
 </div>
-
+<div class="special" id="special" onclick="off()">
+	<h1>特殊简介</h1>
+	<p>今年25岁，一直单身，感觉不会好了。有终极拖延症耽误了好多大好时光，越想得到什么越会离开什么。一名缺钱的锤友（不然肯定每一部都买）。超级喜欢飙血的电影比如昆汀的电影。喜欢rap，尤其喜欢超多的不停的押韵，反正就是听口水歌很带劲。</p>
+</div>
 <section>
 	<div class="tr">
 		<div class="td20">

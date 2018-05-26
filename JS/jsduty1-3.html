@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ife</title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<input id="first-name" type="number" name="" value="0" placeholder="第一个数字">
+	<input id="second-name" type="number" name="" value="0" placeholder="第二个数字">
+	<button id="add-btn" onclick="add()">加</button>
+	<button id="minus-btn" onclick="minus()">减</button>
+	<button id="times-btn" onclick="times()">乘</button>
+	<button id="divide-btn" onclick="divide()">除</button>
+	<p id="result">运算结果</p>
+	<script type="text/javascript">
+		function add(){
+		var fnumber=parseFloat(document.getElementById("first-name").value), snumber=parseFloat(document.getElementById("second-name").value),result;
+		//console.log(typeof fnumber);
+		result=fnumber+snumber;
+		document.getElementById("result").innerHTML=result;
+	}
+	function minus(){
+		var fnumber=parseFloat(document.getElementById("first-name").value), snumber=parseFloat(document.getElementById("second-name").value),result;
+		//console.log(typeof fnumber);
+		result=fnumber-snumber;
+		document.getElementById("result").innerHTML=result;
+	}
+	function times(){
+		var fnumber=parseFloat(document.getElementById("first-name").value), snumber=parseFloat(document.getElementById("second-name").value),result;
+		//console.log(typeof fnumber);
+		result=fnumber*snumber;
+		document.getElementById("result").innerHTML=result;
+	}
+	function divide(){
+		var fnumber=parseFloat(document.getElementById("first-name").value), snumber=parseFloat(document.getElementById("second-name").value),result;
+		//console.log(typeof fnumber);
+		result=fnumber/snumber;
+		document.getElementById("result").innerHTML=result;
+	}
+	</script>
+<body>
+</html>

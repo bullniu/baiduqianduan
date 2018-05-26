@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ife ECMAscript</title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<h1>Demo</h1>
+	<p id="content-wrapper">你是谁？</p>
+	<input id="name-input" type="text" name="" placeholder="输入你的姓名">
+	<button id="send-btn">发送</button>
+	<script type="text/javascript">
+		document.getElementById("send-btn").onclick=function(){
+			document.getElementById("content-wrapper").innerHTML='hello'+document.getElementById("name-input").value;
+		}
+	</script>
+</body>
+</html>
