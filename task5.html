@@ -9,6 +9,14 @@
 </head>
 <body>
 <script type="text/javascript">
+	var myDate=new Date();
+	if(myDate.getHours()<12){
+		alert('上午好');
+	}else if(myDate.getHours()>=12&&myDate.getHours()<=16){
+		alert('下午好');
+	}else{
+		alert('晚上好');
+	}
 	function special(){
 		var boxs=document.getElementById("special");
 		boxs.style.display="block";

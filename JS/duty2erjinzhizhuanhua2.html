@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ife 十进制转化为二进制</title>
+</head>
+<body>
+	<input type="number" id="dec-number" placeholder="输入一个非负整数" name="">
+	<input type="number" id="bin-bit" placeholder="输入转化后二进制的位数" name="">
+	<button id="trans-btn" onclick="dec2bin()">转换为十进制</button>
+	<p id="result">运算结果</p>
+	<script type="text/javascript">
+		function dec2bin(){
+			//这里是十进制到二进制的转化方法。
+			var dec=parseFloat(document.getElementById('dec-number').value),result=document.getElementById('result'),ta='',weishu=document.getElementById('bin-bit').value,erArray;
+			do{
+				var bin,decst;
+				decst=Math.floor(dec)%2;
+				bin=decst.toString();
+				dec=Math.floor(dec/2);
+				ta=bin+ta;
+			}while(dec!=0);
+			//实现点击转化按钮时，将输入的十进制数字转化为二进制，并显示在result的p标签里。
+			
+			//alert(ta);
+			erArray=ta.length;
+			console.log(erArray);
+			if (erArray<weishu) {
+				for(var i=0;i<weishu-erArray;i++)
+				{
+					ta='0'+ta;
+				}
+				result.innerHTML=ta;
+			}else{
+				result.innerHTML=ta;
+				console.log('输入的位数太小')}
+		}
+	</script>
+</body>
+</html>

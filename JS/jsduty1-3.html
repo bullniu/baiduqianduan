@@ -33,6 +33,9 @@
 	}
 	function divide(){
 		var fnumber=parseFloat(document.getElementById("first-name").value), snumber=parseFloat(document.getElementById("second-name").value),result;
+		if(snumber==0){
+			console.log('除数不能为零。')
+		}
 		//console.log(typeof fnumber);
 		result=fnumber/snumber;
 		document.getElementById("result").innerHTML=result;

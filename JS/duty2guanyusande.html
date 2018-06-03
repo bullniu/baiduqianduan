@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>关于三的小游戏</title>
+</head>
+<body>
+	<script type="text/javascript">
+		/*var nArray = new String();
+		for (var i = 0; i<=10; i++) {
+			for(var k=0;k<10;k++){
+				var shi=i.toString();
+				var ge=k.toString();
+				nArray=shi+ge;
+				
+				console.log(nArray);
+				/*if(nArray%3==0){
+					console.log('PA');
+				}else if((i*k)%3==0){
+					console.log('PA');
+				}else{
+					console.log(nArray);
+				}
+			}
+			
+		} 失败的方法*/
+		for(i=1;i<=100;i++){
+			if(Math.floor(i/10)==3){
+				console.log("PA");}
+			else if(i%10==3){
+				console.log("PA");
+			}else if(i%3==0){
+				console.log("PA");
+			}else{console.log(i);}
+		}
+		for(i=1;i<=100;i++){
+			if(Math.floor(i/10)==3){
+				document.write("PA ");}
+			else if(i%10==3){
+				document.write("PA ");
+			}else if(i%3==0){
+				document.write("PA ");
+			}else{document.write(i+' ');}
+		}
+	</script>
+	if(i==0&&k==0){
+					break;
+				}
+</body>
+</html>

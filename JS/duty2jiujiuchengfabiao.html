@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>九九乘法表</title>
+</head>
+<body>
+	<table id="jiu">
+		
+	</table>
+	<table id="jiuj">
+		
+	</table>
+	<script type="text/javascript">
+		var tab=document.getElementById('jiu')
+		var nArray=new Array();
+		for(var i=1;i<=9;i++){
+			var elem=document.createElement('tr');
+				elem.innerHTML='';
+				tab.appendChild(elem);
+			for(var k=i;k<=9;k++){
+				var r=i*k;
+				one=i.toString();
+				two=k.toString();
+				jie=r.toString();
+				var result=one+'*'+two+'='+jie
+				var tde=document.createElement('td');
+				tde.innerHTML=result;
+				elem.appendChild(tde);
+			}
+			
+		}
+		var tab=document.getElementById('jiuj')
+		var nArray=new Array();
+		for(var i=1;i<=9;i++){
+			var elem=document.createElement('tr');
+				elem.innerHTML='';
+				tab.appendChild(elem);
+			for(var k=1;k<=i;k++){
+				var r=i*k;
+				one=k.toString();
+				two=i.toString();
+				jie=r.toString();
+				var result=one+'*'+two+'='+jie
+				var tde=document.createElement('td');
+				tde.innerHTML=result;
+				elem.appendChild(tde);
+			}
+			
+		}
+	</script>
+</body>
+</html>
