@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>duty4-5</title>
+	<style type="text/css">
+		#xiaoLian{
+			margin:0px;
+			padding:0px;
+			height: 480px;
+			width:480px;
+			background-image: url('erik_ce204002.jpg');
+			/*background-position-y: 480px;*/
+		}
+	</style>
+</head>
+<body>
+	<div id='xiaoLian'></div>
+	<script type="text/javascript">
+		/*window.onload=function(){
+        var ani=document.getElementById("xiaoLian");
+        var Y = 480;
+
+        function gif() {
+            ani.style.backgroundPositionY = '-' + Y + 'px';
+            Y>8160?Y=480:Y+=480;
+        }
+            setInterval(gif, 100);
+        }*/
+		var lian=document.getElementById('xiaoLian');
+		var x=480;
+		function change(){
+			lian.style.backgroundPositionY='-'+x+'px';
+			x=480+x;
+		}
+		
+		if(x<86160){window.setInterval('change()',100);}
+
+	</script>
+</body>
+</html>

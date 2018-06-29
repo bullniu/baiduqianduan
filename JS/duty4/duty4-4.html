@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">    
+    <title>IFE ECMAScript</title>
+</head>
+<body>            
+    <div id="fade-obj" style="width:300px;height:300px;background:#000"></div>
+    <button id="fade-btn">淡出</button>
+    <script type="text/javascript">
+        var butt=document.getElementById('fade-btn');
+        var divLow=document.getElementById('fade-obj'); 
+         var x=1;
+         function toLow(){
+            butt.disabled=true;
+                divLow.style.opacity=x;
+                x=x-0.01;
+            if(x>=0){
+                
+                setTimeout('toLow()',10);}
+            else{
+                butt.disabled=false;
+                butt.innerText='淡入';
+                butt.addEventListener('click',toUp);
+            }
+         }
+         function toUp(){
+            butt.disabled=true;
+            divLow.style.opacity=x;
+            x=x+0.01;
+            if(x<=1){
+                setTimeout('toUp()',10);
+            }else{
+                butt.disabled=false;
+                butt.innerText='淡出';
+                butt.addEventListener('click',toLow);
+            }
+         }
+         butt.addEventListener('click',toLow);
+         /*butt.addEventListener('click',toLow);
+        function toLow(){
+          intervalId=setInterval('colorToLow()',10);
+      }
+           
+         
+            function colorToLow(){
+                butt.disabled=true;//使按钮变得不可按。
+                if(x>0){
+                   
+                divLow.style.opacity=x/100;
+                x=x-1; 
+                console.log(x);
+                }
+                else if(x<=0){ 
+                    butt.innerText = '淡入';
+                    console.log('1');
+                     window.clearInterval(intervalId)  ;
+                    butt.disabled=false;
+                    butt.addEventListener('click',toUp); 
+                } 
+            }
+
+            function toUp(){
+                intervalId2=setInterval('colorToUp()',10);
+            }
+            function colorToUp(){
+                butt.disabled=true;
+                if(x<=100){
+                  divLow.style.opacity=x/100;
+                x=x+1;  
+                }
+                else if(x>100){
+                    butt.innerText='淡出';
+                    window.clearInterval(intervalId2);
+                    butt.disabled=false;
+                    butt.addEventListener('click',toLow);
+                    console.log(x);
+                }
+            }
+            //window.clearInterval('id');*/ 
+
+        
+    </script>
+</body>
+</html>

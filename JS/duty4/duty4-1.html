@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>duty4-1</title>
+</head>
+<body>
+	<input id="name" type="text">    
+	<button id="submit-btn">Submit</button>
+	<script type="text/javascript">
+		var dianB=document.getElementById('submit-btn');
+		
+		document.addEventListener('keydown',function(e){ 
+			var keycode=e.which; 
+			if(keycode==13){
+				var name=document.getElementById('name').value;
+			console.log(name);
+			}
+			if(keycode==27){
+				var name=document.getElementById('name');
+				name.value='';
+				name.focus();
+			}
+		})
+		function dianJ(){
+			var name=document.getElementById('name').value;
+			console.log(name);
+		}
+		dianB.onclick=dianJ;
+	</script>
+</body>
+</html>
