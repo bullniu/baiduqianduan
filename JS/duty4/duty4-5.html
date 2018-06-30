@@ -26,14 +26,47 @@
         }
             setInterval(gif, 100);
         }*/
+
 		var lian=document.getElementById('xiaoLian');
 		var x=480;
+		var back=true;console.log(1);
+		setTimeout('change()',100);
 		function change(){
-			lian.style.backgroundPositionY='-'+x+'px';
-			x=480+x;
-		}
+		setTimeout('change()',100);
 		
-		if(x<86160){window.setInterval('change()',100);}
+		if(back==true){
+			x+=480;
+			console.log(x);
+			if(x==8160){
+				back=false;
+			}
+		}
+			if(back==false){
+				x-=480;
+				if(x==480){
+					back=true;
+				}
+			}
+			lian.style.backgroundPositionY='-'+x+'px';
+		}
+
+		/*function change(){
+			lian.style.backgroundPositionY='-'+x+'px';
+			if(back==true){
+			x+=480;
+			console.log(x);
+			if(x==8160){
+				back=false;
+			}
+		}
+			if(back==false){
+				x-=480;
+				if(x==480){
+					back=true;
+				}
+			}
+		}
+		window.setInterval('change()',100);*/	
 
 	</script>
 </body>

@@ -11,7 +11,7 @@
         var butt=document.getElementById('fade-btn');
         var divLow=document.getElementById('fade-obj'); 
          var x=1;
-         function toLow(){
+        /* function toLow(){
             butt.disabled=true;
                 divLow.style.opacity=x;
                 x=x-0.01;
@@ -36,8 +36,8 @@
                 butt.addEventListener('click',toLow);
             }
          }
+         butt.addEventListener('click',toLow);*/
          butt.addEventListener('click',toLow);
-         /*butt.addEventListener('click',toLow);
         function toLow(){
           intervalId=setInterval('colorToLow()',10);
       }
@@ -47,8 +47,8 @@
                 butt.disabled=true;//使按钮变得不可按。
                 if(x>0){
                    
-                divLow.style.opacity=x/100;
-                x=x-1; 
+                divLow.style.opacity=x;
+                x=x-0.01; 
                 console.log(x);
                 }
                 else if(x<=0){ 
@@ -57,27 +57,27 @@
                      window.clearInterval(intervalId)  ;
                     butt.disabled=false;
                     butt.addEventListener('click',toUp); 
-                } 
+                } butt.removeEventListener('click',toLow);
             }
 
             function toUp(){
                 intervalId2=setInterval('colorToUp()',10);
+
             }
             function colorToUp(){
                 butt.disabled=true;
-                if(x<=100){
-                  divLow.style.opacity=x/100;
-                x=x+1;  
+                if(x<=1){
+                  divLow.style.opacity=x;
+                x=Number(divLow.style.opacity)+0.01;  
                 }
-                else if(x>100){
+                else if(x>1){
                     butt.innerText='淡出';
                     window.clearInterval(intervalId2);
                     butt.disabled=false;
                     butt.addEventListener('click',toLow);
                     console.log(x);
-                }
-            }
-            //window.clearInterval('id');*/ 
+                } butt.removeEventListener('click',toUp);}
+            window.clearInterval('id');
 
         
     </script>
