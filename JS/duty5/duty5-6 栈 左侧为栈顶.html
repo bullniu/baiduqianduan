@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>duty5-6 栈</title>
+</head>
+<body>
+	<input id="stack-input" type="text">
+<p id="stack-cont">栈内容：apple&lt;-pear</p>    
+<button id="push-btn">进栈</button>
+<button id="pop-btn">退栈</button>
+<button id="font-btn">打印栈顶元素内容</button>
+<button id="empty-btn">判断栈是否为空</button>
+
+<script>
+var inp=document.querySelector('#stack-input');
+var res=document.querySelector('#stack-cont');
+var butt=document.querySelectorAll('button');
+var stack = ["apple", "pear"];
+butt[0].addEventListener('click',function(){
+			var news=inp.value;
+			stack.unshift(news);
+			console.log(news);
+			console.log(stack);
+		});
+butt[1].addEventListener('click',function(){
+			stack.shift();
+			console.log(stack);
+		})
+butt[2].addEventListener('click',function(){
+			res.innerHTML=stack[0];
+		})
+butt[3].addEventListener('click',function(){
+		if(stack.length==0){
+				console.log('栈为空')
+		}else{
+			console.log('栈不为空');
+			res.innerHTML=stack.join('<-');
+		}
+	})
+
+
+</script>
+</body>
+</html>

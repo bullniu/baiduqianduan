@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    .root{
+      display: flex;
+      padding: 20px;
+      width: 1000px;
+      height: 300px;border: 1px solid #000000;
+      margin: 100px auto;
+      margin-bottom: 10px;
+      justify-content: space-between;
+    }
+    .child_1{
+      display: flex;
+      padding: 20px;
+      width: 450px;
+      height: 260px;border: 1px solid red;
+      justify-content: space-between;
+    }
+    .child_2{
+      display: flex;
+      padding: 20px;
+      width: 170px;
+      height: 220px;border: 1px solid green;
+      justify-content: space-between;
+    }
+    .child_3{
+      display: flex;
+      padding: 20px;
+      width: 35px;
+      height: 180px;border: 1px solid blue;
+      justify-content: space-between;
+    }
+    input{
+      margin-left: 100px;
+      width: 60px;
+      height: 40px;
+      font:20px italic;
+    }
+  </style>
+</head>
+<body>
+<div class="root">
+  <div class="child_1">
+    <div class="child_2">
+      <div class="child_3"></div>
+      <div class="child_3"></div>
+    </div>
+    <div class="child_2">
+      <div class="child_3"></div>
+      <div class="child_3"></div>
+    </div>
+  </div>
+  <div class="child_1">
+    <div class="child_2">
+      <div class="child_3"></div>
+      <div class="child_3"></div>
+    </div>
+    <div class="child_2">
+      <div class="child_3"></div>
+      <div class="child_3"></div>
+    </div>
+  </div>
+</div>
+<input type="button" value="先序">
+<input type="button" value="中序">
+<input type="button" value="后序">
+<script type="text/javascript">
+  /**
+ * Created by hp on 2016/12/22.
+ */
+var btn = document.getElementsByTagName('input'),
+  preBtn = btn[0],
+  inBtn = btn[1],
+  postBtn = btn[2],
+  treeRoot = document.getElementsByClassName('root')[0],
+  divList = [],
+  timer = null;
+window.onload=function(){
+  preBtn.onclick = function () {
+    reset();
+    preOrder(treeRoot);
+    changeColor();
+  }
+  inBtn.onclick = function () {
+    reset();
+    inOrder(treeRoot);
+    changeColor();
+  }
+  postBtn.onclick = function () {
+    reset();
+    postOrder(treeRoot);
+    changeColor();
+  }
+}
+/*先序遍历*/
+function preOrder(node){
+  if(!(node==null)){
+    divList.push(node);
+    preOrder(node.firstElementChild);
+    preOrder(node.lastElementChild);
+  }
+}
+/*中序遍历*/
+function inOrder(node) {
+  if (!(node == null)) {
+    inOrder(node.firstElementChild);
+    divList.push(node);
+    inOrder(node.lastElementChild);
+  }
+}
+/*后序遍历*/
+function postOrder(node) {
+  if (!(node == null)) {
+    postOrder(node.firstElementChild);
+    postOrder(node.lastElementChild);
+    divList.push(node);
+  }
+}
+/*颜色变化函数*/
+function changeColor(){
+  var i=0;
+  divList[i].style.backgroundColor = 'blue';
+  timer=setInterval(function(argument){
+    i++;
+    if(i<divList.length){
+      divList[i-1].style.backgroundColor="#fff";
+      divList[i].style.backgroundColor="blue";
+    }
+    else{
+      divList[divList.length-1].style.backgroundColor="#fff";
+    }
+  },500)
+}
+function reset(){
+  divList=[];
+  clearInterval(timer);
+  var divs=document.getElementsByTagName("div");
+  for(var i=0;i<divs.length;i++){
+    divs[i].style.backgroundColor="#fff";
+  }
+}
+</script>
+</body>
+</html>
