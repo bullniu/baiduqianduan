@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>时钟</title>
+</head>
+<body>
+	<p id="clock"></p>
+	<p id='clockpro'><p>
+	<script type="text/javascript">
+		var clock=document.getElementById('clock');
+		var clockp=document.querySelector('#clockpro');
+		
+		var t;
+		
+		function month(i){
+			var Mon=['01','02','03','04','05','06','07','08','09','10','11','12']
+				return Mon[i];
+		}
+		function week(i){
+			var arrW=['日','一','二','三','四','五','六'];
+			return arrW[i]
+		}
+		function time(i){
+			if(i<10){
+				return '0'+i;
+			}else{
+				return i;
+			}
+		}
+		function enWeek(i){
+			var arrEnW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saterday']
+			return arrEnW[i];
+		}
+		function twHours(i){
+			
+			if(i>12){
+
+				i=i-12;
+			}
+			if(i<10){
+				return '0'+i;
+			}else{
+				return i;
+			}
+		}
+		function amap(i){
+			if(i<12){
+				return 'AM';
+			}else{
+				return 'AP';
+			}
+		}
+		//clock.innerHTML=now;
+		function show(){
+		var now= new Date();
+		var y=now.getFullYear();
+		var m=now.getMonth();
+		var d=now.getDate();
+		var wd=now.getDay();
+		var h=now.getHours();
+		var twH=twHours(h);
+		var ms=now.getMinutes();
+		var s=now.getSeconds();
+		var enWd=enWeek(wd);
+		var ap=amap(h);
+		m=month(m)
+		h=time(h);
+		ms=time(ms);
+		s=time(s);
+		wd=week(wd);
+		
+		clock.innerHTML=y+"年"+m+"月"+d+"日"+" "+"星期"+wd+" "+h+":"+ms+":"+s;
+		clockp.innerHTML=y+'-'+m+'-'+d+' '+enWd+' '+twH+':'+ms+':'+s+' '+ap;
+		setTimeout('show()',50);
+	}
+	window.show();	
+	</script>
+</body>
+</html>
