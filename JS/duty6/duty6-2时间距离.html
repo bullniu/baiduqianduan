@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>duty5-3时间距离</title>
+</head>
+<body>
+<select id="year-select">
+	<option value="年">--年--</option>
+    <option value="2000">2000</option>
+    <option value="2001">2001</option>
+    <option value="2002">2002</option>
+   	<option value="2003">2003</option>
+   	<option value="2004">2004</option>
+   	<option value="2005">2005</option>
+   	<option value="2006">2006</option>
+   	<option value="2007">2007</option>
+   	<option value="2008">2008</option>
+   	<option value="2009">2009</option>
+   	<option value="2010">2010</option>
+   	<option value="2011">2011</option>
+    <option value="2012">2012</option>
+    <option value='2020'>2020</option>
+</select>
+
+<select id="month-select">
+	<option value="月">--月--</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+</select>
+
+<select id="day-select">
+	<option value="天">--天--</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value='3'>3</option>
+    <option value='4'>4</option>
+    <option value='5'>5</option>
+	<option value='6'>6</option>
+    <option value='7'>7</option>
+    <option value='8'>8</option>
+    <option value='9'>9</option>
+    <option value='10'>10</option>
+    <option value='11'>11</option>
+    <option value='12'>12</option>
+    <option value='13'>13</option>
+    <option value='14'>14</option>
+    <option value='15'>15</option>
+    <option value='27'>27</option>
+    <option value='28'>28</option>
+    <option value='29'>29</option>
+    <option value='30'>30</option>
+    <option value='31'>31</option>
+</select>
+
+<select id="hour-select">
+	<option value="时">--时--</option>
+    <option value="0">00</option>
+    <option value="1">01</option>        
+    <option value="2">02</option>
+    <option value="3">03</option>     
+    <option value="4">04</option>     
+    <option value="5">05</option>     
+    <option value="6">06</option>     
+    <option value="7">07</option>     
+    <option value="8">08</option>     
+    <option value="9">09</option>     
+    <option value="10">10</option>     
+    <option value="11">11</option>
+    <option value="12">12</option>     
+    <option value="13">13</option>     
+    <option value="14">14</option>             
+    <option value="23">23</option>
+</select>
+
+<select id="minite-select">
+	<option value="分">--分--</option>
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+    <option value="13">13</option>
+    <option value='59'>59</option>
+</select>
+
+<select id="second-select">
+	<option value="秒">--秒--</option>
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+    <option value="13">13</option>
+    <option value='59'>59</option>
+</select>
+
+<p id="result-wrapper">现在距离 <span id="y">2000</span>年<span id="m">1</span>月<span id="d">1</span>日星期<span id="week">X</span> <span id="h">HH</span>:<span id="ms">MM</span>:<span id="s">SS</span> <span id="wenan">还有</span> <span id="jiegou">X 天 X 小时 X 分 X 秒</span></p>
+<script type="text/javascript">
+	var now=new Date();
+	var choice=new Date;
+	var butt=document.querySelectorAll('select');
+	var weekNo=document.querySelector('#week');
+	var wenAn=document.querySelector('#wenan');
+	var arr=['','','','','',''];//用于判断年月日是否选择完毕。
+	var arr=['日','一','二','三','四','五','六'];
+	var show=document.querySelector('#result-wrapper');
+	//对年的操作
+	function showYear(){
+		var d=document.querySelector('#result-wrapper #y')
+		var D=document.querySelector('#year-select').value;
+			console.log(D);
+			choice.setFullYear(D);
+			d.innerHTML=D;
+			compare(0);//用去判断年是否选择完毕；
+			twoMonth(D);
+	}
+	//对月的操作
+	function showMonth(){
+		var m=document.querySelector('#result-wrapper #m')
+		var D=document.querySelector('#month-select').value;
+		choice.setMonth(D);
+			console.log(D);
+			m.innerHTML=D;
+			compare(1);
+			twoOrOther(D);
+	}
+	//对天的操作
+	function showDay(){
+		var d=document.querySelector('#result-wrapper #d')
+		var D=document.querySelector('#day-select').value;
+		choice.setDate(D);
+			console.log(D);
+			d.innerHTML=D;
+			weekNo.innerHTML=arr[choice.getDay()];
+			compare(2);
+	}
+	//对小时的操作
+	function showHour(){
+		var h=document.querySelector('#result-wrapper #h')
+		var D=document.querySelector('#hour-select').value;
+		choice.setHours(D);
+			console.log(D);
+			h.innerHTML=D;
+			//console.log(choice);
+			compare(3);
+	}
+	//对分的操作
+	function showMinite(){
+		var ms=document.querySelector('#result-wrapper #ms');
+		var D=document.querySelector('#minite-select').value;
+		choice.setMinutes(D);
+			console.log(D);
+			ms.innerHTML=D;
+			//console.log(choice);
+		compare(4);	
+	}
+	//对秒的操作
+	function showSecond(){
+		var s=document.querySelector('#result-wrapper #s');
+		var D=document.querySelector('#second-select').value;
+		choice.setSeconds(D);
+			console.log(D);
+			s.innerHTML=D;
+			//console.log(choice);
+		compare(5);
+	}
+	//判断是否填写完毕
+	
+	function compare(i){
+		var arr1=new Array();
+		var x=5;
+		arr[i]=0;
+		arr1=arr;
+		console.log(arr);
+		console.log(arr1);
+		for(var m=0;m<arr.length;m++){
+			if(arr1[m]===''){
+				x=0;
+			}else{
+				console.log(2);
+				x=1;
+			}
+		}
+		console.log(x);
+		if(x==1){
+			console.log(1);
+			bijiao();
+		}
+	}
+
+	//进行和现在日期比较的函数
+	function bijiao(){
+		var result=document.querySelector('#jiegou');
+		var nowTo70;
+		var choiceTo70;
+		var cha;
+		var miao;
+		var fen;
+		var xiaoS;
+		var tian;
+		nowTo70=now.getTime();
+		choiceTo70=Date.parse(choice);
+		if(nowTo70>choiceTo70){
+			wenAn.innerHTML='已经过去';
+		}else{
+			wenAn.innerHTML='还有';
+		}
+		cha=parseInt(Math.abs(nowTo70-choiceTo70)/1000);
+		console.log(cha);
+		miao=cha%60;
+		if(parseInt(cha/60)==0){
+			result.innerHTML='0天0小时0分'+miao+'秒';
+		}else{
+			fen=parseInt(cha/60)%60;
+			if(parseInt(parseInt(cha/60)/60)==0)
+			{result.innerHTML='0天0小时'+fen+'分'+miao+'秒';
+		}else{
+			xiaoS=parseInt(parseInt(cha/60)/60)%24;
+			if(parseInt(parseInt(parseInt(cha/60)/60))/24==0){
+				result.innerHTML='0天'+xiaoS+'小时'+fen+'分'+miao+'秒';
+			}else{
+				tian=parseInt(parseInt(parseInt(cha/60)/60)/24);
+				result.innerHTML=tian+'天'+xiaoS+'小时'+fen+'分'+miao+'秒';
+			}}
+		}
+		/*console.log(miao);
+		console.log(fen);
+		console.log(xiaoS);
+		console.log(tian);*/
+	}
+	//判断选择的是否是二月
+	function twoOrOther(mon){
+			if(mon==2){
+				twoMonth(mon);
+			}else{
+				thirtyOne(mon);
+			}
+	}
+	//对月份的不同天数操作的函数
+	function thirtyOne(mon){
+		console.log(mon);
+		var thirtyOne=document.querySelector("#day-select option[value='31']");
+		var thirty=document.querySelector("#day-select option[value='30']");
+		var twoNine=document.querySelector("#day-select option[value='29']");
+		if((mon==4)||(mon==6)||(mon==9)||(mon==11)){
+			console.log(1);
+			thirtyOne.style.display='none';
+			thirty.style.display='block';
+			twoNine.style.display='block';
+		}else{
+			thirtyOne.style.display='block';
+		}
+
+	}
+	//对闰年和二月的操作函数
+	function twoMonth(){
+		var thirtyOne=document.querySelector("#day-select option[value='31']");
+		var thirty=document.querySelector("#day-select option[value='30']");
+		var twoNine=document.querySelector("#day-select option[value='29']");
+		var year=document.querySelector("#year-select").value;
+		if((year%4==0)&&(year%100!=0)||(year%400==0)){
+		thirtyOne.style.display='none';
+		thirty.style.display='none';
+		}else{
+			thirtyOne.style.display='none';
+			thirty.style.display='none';
+			twoNine.style.display='none';
+		}		
+	}
+	butt[0].addEventListener('change',showYear);
+	butt[1].addEventListener('change',showMonth);
+	butt[2].addEventListener('change',showDay);
+	butt[3].addEventListener('change',showHour);
+	butt[4].addEventListener('change',showMinite);
+	butt[5].addEventListener('change',showSecond);
+</script>
+</body>
+</html>
