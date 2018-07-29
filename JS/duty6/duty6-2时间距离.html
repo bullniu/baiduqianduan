@@ -127,7 +127,7 @@
 	var butt=document.querySelectorAll('select');
 	var weekNo=document.querySelector('#week');
 	var wenAn=document.querySelector('#wenan');
-	var arr=['','','','','',''];//用于判断年月日是否选择完毕。
+	
 	var arr=['日','一','二','三','四','五','六'];
 	var show=document.querySelector('#result-wrapper');
 	//对年的操作
@@ -191,7 +191,7 @@
 		compare(5);
 	}
 	//判断是否填写完毕
-	
+	var arr=['','','','','',''];//用于判断年月日是否选择完毕。
 	function compare(i){
 		var arr1=new Array();
 		var x=5;
