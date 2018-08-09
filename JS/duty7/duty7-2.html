@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>一步一步发邮件</title>
+</head>
+<body>
+	<div class="wrapper">
+    	<input id="email-input" type="text">
+    	<ul id="email-sug-wrapper" class="email-sug"></ul>
+	</div>
+	<script type="text/javascript">
+		var postfixList=['163.com','gmail.com','126.com','qq.com','263.net'];
+		var listener=document.getElementById('email-input');
+		var ulEmail=document.getElementById('email-sug-wrapper');
+		//获取用户的输入，生成提示框中的内容，将提示内容添加到email-sug-wrapper中
+		function inputDom(){
+			var emailText=document.getElementById('email-input').value;
+			
+			//var useEmailText;
+			//var list;
+			console.log(1);
+			var useEmailText=useInput(emailText);
+			var list=getTishi(useEmailText);
+			addContext(list);
+			showOrHidden(emailText);
+				/*for(var i=0;i<=4;i++){
+					console.log(i);
+					var li=document.createElement('li');
+					ulEmail.appendChild(li);
+					var text=document.createTextNode(postfixList[i]);
+					li.appendChild(text);
+					li.setAttribute('class','fenge');
+					li.style.display='none';	
+				}*/
+		}
+		//拿到用户的input输入框的输入内容trim后返回
+		function useInput(useText){
+			var text=useText.trim();
+			return text;
+		}
+		//生成提示框中的内容
+		function getTishi(useEmailText){
+			var arr=new Array();
+			for(var i=0;i<=4;i++){
+					//console.log(i);
+					var li=document.createElement('li');
+					var text=document.createTextNode(useEmailText+'@'+postfixList[i]);
+					li.appendChild(text);
+					/*li.setAttribute('class','fenge');*/
+					//li.style.display='none';
+					arr.push(li);	
+				}
+			console.log(arr);
+			return arr;
+		}
+		//将提示内容添加到email-sug-wrapper中
+		function addContext(list){
+			for(var i=0;i<=4;i++){
+				ulEmail.appendChild(list[i]);
+			}
+		}
+		//控制email-sug-wrapper的显示隐藏状态
+		function showOrHidden(text){
+			if(text===''){
+				hidden();
+			}else{
+				show();
+			}
+		}
+		//隐藏
+		function hidden(){
+			//document.getElementById('email-sug-wrapper').style.display='none';
+			emailLi=document.getElementsByTagName('li');
+			for(var i=0;i<=emailLi.length;i++){
+					//console.log(2);
+				ulEmail.removeChild(emailLi[0]);
+			}
+		}
+		function show(){
+			document.getElementById('email-sug-wrapper').style.display='display';
+		}
+		listener.addEventListener('input',inputDom);
+	</script>
+</body>
+</html>

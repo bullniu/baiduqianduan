@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>duty7</title>
+</head>
+<body>
+	<div id="email-input" type='text'>
+		<ul id='email-sug-wrapper' class='email-sug'></ul>
+	</div>
+	123
+	<script type="text/javascript">
+		console.log(1);
+		var postfixList=['163.com','gmail.com','126.com','qq.com','263.net']
+		var emailText=document.getElementById('email-input').value;
+		var ulEmail=document.getElementById('email-sug-wrapper');
+		for(var i=0;i<=4;i++){
+			var li=document.createElement("li");
+			ulEmail.appendChild(li);
+			var text=document.createTextNode("postfixList");
+			li.appendChild(text);
+		}
+	</script>
+</body>
+</html>

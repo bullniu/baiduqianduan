@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>duty7</title>
+	<style type="text/css">
+		.shuru{
+			height: 23px;
+			width: 193px;
+		}
+		.email-sug{
+			padding-left:0px;
+			margin-top:0px;
+			width:197px;
+		}
+		.fenge{
+			list-style: none;
+			border-left:1px solid grey;
+			border-right:1px solid grey;
+			border-bottom:1px solid grey;
+			padding:3px;
+		}
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+    	<input id="email-input" class="shuru" type="text">
+    	<ul id="email-sug-wrapper" class="email-sug">
+    		<!--<li class="fenge">163.com</li>
+    		<li class="fenge">gmail.com</li>
+    		<li class="fenge">126.com</li>
+    		<li class="fenge">qq.com</li>
+    		<li class="fenge">263.net</li>-->
+    	</ul>
+	</div>
+	<script type="text/javascript">
+		//console.log(1);
+		var postfixList=['163.com','gmail.com','126.com','qq.com','263.net']
+		var email=document.getElementById('email-input');
+		function setLi(){
+			var ulEmail=document.getElementById('email-sug-wrapper');
+			console.log(1);
+				for(var i=0;i<=4;i++){
+					console.log(i);
+					var li=document.createElement('li');
+					ulEmail.appendChild(li);
+					var text=document.createTextNode(postfixList[i]);
+					li.appendChild(text);
+					/*li.style.listStyle='none';*/
+					li.setAttribute('class','fenge');
+					li.style.display='none';	
+				}
+		}
+		//emailLi[i].textContent=emailText+'@'+postfixList[i];
+		function full(){
+			var emailText=document.getElementById('email-input').value;
+			var UlEmail=document.getElementById('email-sug-wrapper');
+			var emailLi=document.getElementsByTagName('li')
+			console.log(2);
+			//console.log(emailText);
+			//console.log('323');
+			for(var i=0;i<=4;i++){
+				emailLi[i].style.display='block';
+				emailLi[i].textContent=emailText+'@'+postfixList[i];
+			}
+			if(emailText===''){
+				for(var i=0;i<=4;i++){
+					//console.log(2);
+				UlEmail.removeChild(emailLi[0]);
+				//UlEmail.removeChild(emailLi[1]);
+				//UlEmail.removeChild(emailLi[2]);
+				//UlEmail.removeChild(emailLi[3]);
+				//UlEmail.removeChild(emailLi[4]);
+				/*emailLi[i].style.display='none';*/
+				}
+			}
+		}
+		email.addEventListener('focus',setLi);
+		email.addEventListener('input',full);
+	</script>
+</body>
+</html>
