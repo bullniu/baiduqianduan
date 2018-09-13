@@ -33,16 +33,77 @@
 		var postfixList=['163.com','gmail.com','126.com','qq.com','263.net'];
 		var listener=document.getElementById('email-input');
 		var ulEmail=document.getElementById('email-sug-wrapper');
+		//页面加载完成后即后的焦点
+		window.onload=function(){
+			listener.focus();
+		}
 		//获取用户输入，生成提示框的提示内容，将提示内容添加到email-sug-wrapper中；
 		//控制email-sug-wrapper的隐藏和显示；
 		listener.oninput=function(){
-			hiddenOrShow();
+				hiddenOrShow();
+				selected();
 		}
 		//去除input输入框中的空格
 		function getEmail(){
 			var text=document.getElementById('email-input').value;
 			return text.trim();
 		}
+		//设置li中的选中的状态
+		function selected(){
+			var getli=document.getElementsByTagName('li');
+			getli[0].style.backgroundColor='grey';
+		}
+		//键盘移动选中的事件
+		function keylisten(e){
+			var getli=document.getElementsByTagName('li');
+			for(i=0;i<getli.length;i++){
+				if(getli[i].style.backgroundColor==='grey'){
+					var j=i;
+					break;
+				}
+			}
+			if(j<getli.length-1&&j>0){
+				if(e.keyCode==40){
+					getli[j].style.backgroundColor='';
+					getli[j+1].style.backgroundColor='grey';
+				}else if(e.keyCode==38){
+					getli[j].style.backgroundColor='';
+					getli[j-1].style.backgroundColor='grey';
+				}else if(e.keyCode==13){
+					console.log(1); 
+					listener.value=getli[j].innerHTML;
+					hidden();
+					listener.focus();
+				}
+			}else if(j==0){
+				if(e.keyCode==40){
+					getli[j].style.backgroundColor='';
+					getli[j+1].style.backgroundColor='grey';
+				}
+				if(e.keyCode==13){
+					console.log(1); 
+					listener.value=getli[j].innerHTML;
+					hidden();
+					listener.focus();
+				}
+			}else if(j==getli.length-1){
+				if(e.keyCode==38){
+					getli[j].style.backgroundColor='';
+					getli[j-1].style.backgroundColor='grey';
+				}
+				if(e.keyCode==13){
+					console.log(1); 
+					listener.value=getli[j].innerHTML;
+					hidden();
+					listener.focus();
+				}
+			}
+
+			if(e.keyCode==27){
+				listener.select();
+			}
+		}
+		window.addEventListener('keydown',keylisten);
 		//获取用户输入
 		//遍历postfixList，把每一个用户输入和每一个postfix结合成一个li，并返回生成的提示内容
 		function setLi(){
@@ -191,6 +252,7 @@
 			listener.value=e.target.innerHTML;
 			console.log(listener.value);
 			hidden();
+			listener.focus();
 		}
 		ulEmail.addEventListener('click',mclick);
 	</script>
