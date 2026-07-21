@@ -1,4 +1,4 @@
-import { WeldingProcedure } from '@/types';
+import { WeldingProcedure, WeldPass } from '@/types';
 import { calculateTravelSpeed, calculateHeatInput } from './calculation';
 
 const STORAGE_KEY = 'welding_procedures';
@@ -11,6 +11,24 @@ function generateId(): string {
 }
 
 /**
+ * 规范化单个 pass，确保所有字段都存在且为有效数字
+ * 兼容旧数据（没有 weldLength 和 duration 字段）
+ */
+function normalizePass(pass: Partial<WeldPass>): WeldPass {
+  return {
+    id: pass.id || generateId(),
+    passNumber: Number(pass.passNumber) || 0,
+    current: Number(pass.current) || 0,
+    voltage: Number(pass.voltage) || 0,
+    weldLength: Number(pass.weldLength) || 0,
+    duration: Number(pass.duration) || 0,
+    travelSpeed: Number(pass.travelSpeed) || 0,
+    heatInput: Number(pass.heatInput) || 0,
+    createdAt: pass.createdAt || new Date().toISOString(),
+  };
+}
+
+/**
  * 从LocalStorage获取所有工艺评定方案
  */
 export function getAllProcedures(): WeldingProcedure[] {
@@ -19,14 +37,16 @@ export function getAllProcedures(): WeldingProcedure[] {
     if (!data) return [];
     
     const procedures = JSON.parse(data) as WeldingProcedure[];
-    // 确保layers和passes按顺序排列
+    // 使用 slice() 创建副本后再排序，避免修改原数组
     return procedures.map(procedure => ({
       ...procedure,
-      layers: procedure.layers
+      layers: [...procedure.layers]
         .sort((a, b) => a.layerNumber - b.layerNumber)
         .map(layer => ({
           ...layer,
-          passes: layer.passes.sort((a, b) => a.passNumber - b.passNumber)
+          passes: [...layer.passes]
+            .sort((a, b) => a.passNumber - b.passNumber)
+            .map(normalizePass)
         }))
     }));
   } catch (error) {
@@ -100,23 +120,21 @@ export function deleteProcedure(id: string): boolean {
  * 添加焊接层
  */
 export function addLayer(procedureId: string): WeldingProcedure | null {
-  const procedure = getProcedureById(procedureId);
-  if (!procedure) return null;
+  const procedures = getAllProcedures();
+  const index = procedures.findIndex(p => p.id === procedureId);
+  if (index === -1) return null;
   
+  const procedure = procedures[index];
   const layerNumber = procedure.layers.length + 1;
-  const newLayer = {
+  
+  procedure.layers.push({
     id: generateId(),
     layerNumber,
     passes: [],
     createdAt: new Date().toISOString(),
-  };
+  });
   
-  procedure.layers.push(newLayer);
   procedure.updatedAt = new Date().toISOString();
-  
-  const procedures = getAllProcedures();
-  const index = procedures.findIndex(p => p.id === procedureId);
-  procedures[index] = procedure;
   saveToStorage(procedures);
   
   return procedure;
@@ -126,21 +144,19 @@ export function addLayer(procedureId: string): WeldingProcedure | null {
  * 删除焊接层
  */
 export function deleteLayer(procedureId: string, layerId: string): WeldingProcedure | null {
-  const procedure = getProcedureById(procedureId);
-  if (!procedure) return null;
+  const procedures = getAllProcedures();
+  const index = procedures.findIndex(p => p.id === procedureId);
+  if (index === -1) return null;
   
+  const procedure = procedures[index];
   procedure.layers = procedure.layers.filter(l => l.id !== layerId);
   // 重新编号层
-  procedure.layers.forEach((layer, index) => {
-    layer.layerNumber = index + 1;
+  procedure.layers.forEach((layer, i) => {
+    layer.layerNumber = i + 1;
   });
   procedure.updatedAt = new Date().toISOString();
   
-  const procedures = getAllProcedures();
-  const index = procedures.findIndex(p => p.id === procedureId);
-  procedures[index] = procedure;
   saveToStorage(procedures);
-  
   return procedure;
 }
 
@@ -148,14 +164,16 @@ export function deleteLayer(procedureId: string, layerId: string): WeldingProced
  * 添加焊接道次
  */
 export function addPass(procedureId: string, layerId: string): WeldingProcedure | null {
-  const procedure = getProcedureById(procedureId);
-  if (!procedure) return null;
+  const procedures = getAllProcedures();
+  const index = procedures.findIndex(p => p.id === procedureId);
+  if (index === -1) return null;
   
+  const procedure = procedures[index];
   const layer = procedure.layers.find(l => l.id === layerId);
   if (!layer) return null;
   
   const passNumber = layer.passes.length + 1;
-  const newPass = {
+  const newPass = normalizePass({
     id: generateId(),
     passNumber,
     current: 0,
@@ -165,16 +183,12 @@ export function addPass(procedureId: string, layerId: string): WeldingProcedure 
     travelSpeed: 0,
     heatInput: 0,
     createdAt: new Date().toISOString(),
-  };
+  });
   
   layer.passes.push(newPass);
   procedure.updatedAt = new Date().toISOString();
   
-  const procedures = getAllProcedures();
-  const index = procedures.findIndex(p => p.id === procedureId);
-  procedures[index] = procedure;
   saveToStorage(procedures);
-  
   return procedure;
 }
 
@@ -187,32 +201,36 @@ export function updatePass(
   passId: string,
   data: { current: number; voltage: number; weldLength: number; duration: number }
 ): WeldingProcedure | null {
-  const procedure = getProcedureById(procedureId);
-  if (!procedure) return null;
+  const procedures = getAllProcedures();
+  const pIndex = procedures.findIndex(p => p.id === procedureId);
+  if (pIndex === -1) return null;
   
+  const procedure = procedures[pIndex];
   const layer = procedure.layers.find(l => l.id === layerId);
   if (!layer) return null;
   
   const pass = layer.passes.find(p => p.id === passId);
   if (!pass) return null;
   
-  const travelSpeed = calculateTravelSpeed(data.weldLength, data.duration);
-  const heatInput = calculateHeatInput(data.current, data.voltage, travelSpeed);
+  // 确保所有输入是有效数字
+  const current = Number(data.current) || 0;
+  const voltage = Number(data.voltage) || 0;
+  const weldLength = Number(data.weldLength) || 0;
+  const duration = Number(data.duration) || 0;
   
-  pass.current = data.current;
-  pass.voltage = data.voltage;
-  pass.weldLength = data.weldLength;
-  pass.duration = data.duration;
+  const travelSpeed = calculateTravelSpeed(weldLength, duration);
+  const heatInput = calculateHeatInput(current, voltage, travelSpeed);
+  
+  pass.current = current;
+  pass.voltage = voltage;
+  pass.weldLength = weldLength;
+  pass.duration = duration;
   pass.travelSpeed = travelSpeed;
   pass.heatInput = heatInput;
   
   procedure.updatedAt = new Date().toISOString();
   
-  const procedures = getAllProcedures();
-  const index = procedures.findIndex(p => p.id === procedureId);
-  procedures[index] = procedure;
   saveToStorage(procedures);
-  
   return procedure;
 }
 
@@ -224,25 +242,23 @@ export function deletePass(
   layerId: string,
   passId: string
 ): WeldingProcedure | null {
-  const procedure = getProcedureById(procedureId);
-  if (!procedure) return null;
+  const procedures = getAllProcedures();
+  const pIndex = procedures.findIndex(p => p.id === procedureId);
+  if (pIndex === -1) return null;
   
+  const procedure = procedures[pIndex];
   const layer = procedure.layers.find(l => l.id === layerId);
   if (!layer) return null;
   
   layer.passes = layer.passes.filter(p => p.id !== passId);
   // 重新编号道次
-  layer.passes.forEach((pass, index) => {
-    pass.passNumber = index + 1;
+  layer.passes.forEach((pass, i) => {
+    pass.passNumber = i + 1;
   });
   
   procedure.updatedAt = new Date().toISOString();
   
-  const procedures = getAllProcedures();
-  const index = procedures.findIndex(p => p.id === procedureId);
-  procedures[index] = procedure;
   saveToStorage(procedures);
-  
   return procedure;
 }
 

@@ -176,17 +176,27 @@ export function ProcedureDetail() {
     }
   };
 
+  const currentProcedureRef = useRef(currentProcedure);
+  currentProcedureRef.current = currentProcedure;
+
   const startTimer = (passId: string) => {
+    // 清理可能存在的旧定时器
+    if (timerIntervalRef.current[passId]) {
+      clearInterval(timerIntervalRef.current[passId]);
+    }
+
+    const startTime = Date.now();
+    // 先同步获取当前 elapsed 值
+    let currentElapsed = 0;
     setTimers(prev => {
       const existing = prev[passId];
-      // 确保有完整的 timer 对象，elapsed 必须是有效数字
-      const elapsed = existing && Number.isFinite(existing.elapsed) ? existing.elapsed : 0;
+      currentElapsed = existing && Number.isFinite(existing.elapsed) ? existing.elapsed : 0;
       return {
         ...prev,
         [passId]: {
           isRunning: true,
-          elapsed,
-          startTime: Date.now(),
+          elapsed: currentElapsed,
+          startTime,
         }
       };
     });
@@ -212,79 +222,88 @@ export function ProcedureDetail() {
   };
 
   const pauseTimer = (passId: string, layerId: string) => {
-    if (!currentProcedure) return;
-    
+    // 清理定时器
     if (timerIntervalRef.current[passId]) {
       clearInterval(timerIntervalRef.current[passId]);
       delete timerIntervalRef.current[passId];
     }
 
-    // 先计算最终时间，再更新 state 和 storage
-    const timer = timers[passId];
-    let finalElapsed = 0;
-    if (timer) {
-      finalElapsed = Number(timer.elapsed) || 0;
-      if (timer.isRunning && timer.startTime) {
-        finalElapsed += (Date.now() - timer.startTime) / 1000;
-      }
-    }
-    finalElapsed = Math.round(finalElapsed * 10) / 10;
+    try {
+      const proc = currentProcedureRef.current;
+      if (!proc) return;
 
-    // 更新 timer state（纯函数，无副作用）
-    setTimers(prev => ({
-      ...prev,
-      [passId]: {
-        isRunning: false,
-        elapsed: finalElapsed,
-        startTime: null,
+      const timer = timers[passId];
+      let finalElapsed = 0;
+      if (timer) {
+        finalElapsed = Number(timer.elapsed) || 0;
+        if (timer.isRunning && timer.startTime) {
+          finalElapsed += (Date.now() - timer.startTime) / 1000;
+        }
       }
-    }));
+      finalElapsed = Math.round(finalElapsed * 10) / 10;
 
-    // 在 setTimers 之外执行副作用
-    const pass = currentProcedure.layers
-      .find(l => l.id === layerId)
-      ?.passes.find(p => p.id === passId);
-    
-    if (pass) {
-      updatePass(currentProcedure.id, layerId, passId, {
-        current: pass.current || 0,
-        voltage: pass.voltage || 0,
-        weldLength: pass.weldLength || 0,
-        duration: finalElapsed,
-      });
+      // 更新 timer state
+      setTimers(prev => ({
+        ...prev,
+        [passId]: {
+          isRunning: false,
+          elapsed: finalElapsed,
+          startTime: null,
+        }
+      }));
+
+      const pass = proc.layers
+        .find(l => l.id === layerId)
+        ?.passes.find(p => p.id === passId);
+      
+      if (pass) {
+        updatePass(proc.id, layerId, passId, {
+          current: Number(pass.current) || 0,
+          voltage: Number(pass.voltage) || 0,
+          weldLength: Number(pass.weldLength) || 0,
+          duration: finalElapsed,
+        });
+      }
+    } catch (err) {
+      console.error('暂停计时器失败:', err);
     }
   };
 
   const resetTimer = (passId: string, layerId: string) => {
-    if (!currentProcedure) return;
-    
+    // 清理定时器
     if (timerIntervalRef.current[passId]) {
       clearInterval(timerIntervalRef.current[passId]);
       delete timerIntervalRef.current[passId];
     }
 
-    // 先更新 timer state（纯函数，无副作用）
-    setTimers(prev => ({
-      ...prev,
-      [passId]: {
-        isRunning: false,
-        elapsed: 0,
-        startTime: null,
-      }
-    }));
+    try {
+      const proc = currentProcedureRef.current;
+      if (!proc) return;
 
-    // 在 setTimers 之外执行副作用
-    const pass = currentProcedure.layers
-      .find(l => l.id === layerId)
-      ?.passes.find(p => p.id === passId);
-    
-    if (pass) {
-      updatePass(currentProcedure.id, layerId, passId, {
-        current: pass.current || 0,
-        voltage: pass.voltage || 0,
-        weldLength: pass.weldLength || 0,
-        duration: 0,
-      });
+      // 更新 timer state
+      setTimers(prev => ({
+        ...prev,
+        [passId]: {
+          isRunning: false,
+          elapsed: 0,
+          startTime: null,
+        }
+      }));
+
+      const pass = proc.layers
+        .find(l => l.id === layerId)
+        ?.passes.find(p => p.id === passId);
+      
+      if (pass) {
+        updatePass(proc.id, layerId, passId, {
+          current: Number(pass.current) || 0,
+          voltage: Number(pass.voltage) || 0,
+          weldLength: Number(pass.weldLength) || 0,
+          duration: 0,
+        });
+      }
+    } catch (err) {
+      console.error('重置计时器失败:', err);
     }
   };
 
@@ -601,11 +620,7 @@ export function ProcedureDetail() {
                                     </button>
                                   )}
                                   <button
-                                    onClick={() => {
-                                      if (confirm('确定要重置计时器吗？')) {
-                                        resetTimer(pass.id, layer.id);
-                                      }
-                                    }}
+                                    onClick={() => resetTimer(pass.id, layer.id)}
                                     className="p-1.5 bg-slate-400 text-white rounded hover:bg-slate-500 transition-colors"
                                     title="重置计时器"
                                   >
@@ -616,20 +631,20 @@ export function ProcedureDetail() {
                             </td>
                             <td className="px-4 py-3">
                               <div className={`px-3 py-1.5 rounded font-mono font-semibold text-right ${
-                                pass.travelSpeed > 0 
+                                (pass.travelSpeed || 0) > 0 
                                   ? 'bg-teal-100 text-teal-700' 
                                   : 'bg-slate-100 text-slate-400'
                               }`}>
-                                {pass.travelSpeed.toFixed(2)}
+                                {(Number(pass.travelSpeed) || 0).toFixed(2)}
                               </div>
                             </td>
                             <td className="px-4 py-3">
                               <div className={`px-3 py-1.5 rounded font-mono font-semibold text-right ${
-                                pass.heatInput > 0 
+                                (pass.heatInput || 0) > 0 
                                   ? 'bg-blue-100 text-blue-700' 
                                   : 'bg-slate-100 text-slate-400'
                               }`}>
-                                {pass.heatInput.toFixed(3)}
+                                {(Number(pass.heatInput) || 0).toFixed(3)}
                               </div>
                             </td>
                             <td className="px-4 py-3">
