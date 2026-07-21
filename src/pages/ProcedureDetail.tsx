@@ -8,7 +8,7 @@ import {
 import { useProcedureStore } from '@/store';
 import { WeldingProcedure, WeldPass, Statistics } from '@/types';
 import { exportToExcel } from '@/utils/export';
-import { formatDuration } from '@/utils/calculation';
+import { calculateTravelSpeed, calculateHeatInput, formatDuration } from '@/utils/calculation';
 
 export function ProcedureDetail() {
   const { id } = useParams<{ id: string }>();
@@ -81,54 +81,6 @@ export function ProcedureDetail() {
       timerIntervalRef.current = {};
     };
   }, []);
-
-  const calculateStatistics = (procedure: WeldingProcedure | null): Statistics => {
-    if (!procedure || procedure.layers.length === 0) {
-      return {
-        totalPasses: 0,
-        totalLayers: 0,
-        averageHeatInput: 0,
-        minHeatInput: 0,
-        maxHeatInput: 0,
-        averageCurrent: 0,
-        averageVoltage: 0,
-        averageTravelSpeed: 0,
-      };
-    }
-
-    const allPasses = procedure.layers.flatMap(layer => layer.passes);
-    
-    if (allPasses.length === 0) {
-      return {
-        totalPasses: 0,
-        totalLayers: procedure.layers.length,
-        averageHeatInput: 0,
-        minHeatInput: 0,
-        maxHeatInput: 0,
-        averageCurrent: 0,
-        averageVoltage: 0,
-        averageTravelSpeed: 0,
-      };
-    }
-
-    const heatInputs = allPasses.map(p => p.heatInput).filter(h => h > 0);
-    const currents = allPasses.map(p => p.current).filter(c => c > 0);
-    const voltages = allPasses.map(p => p.voltage).filter(v => v > 0);
-    const speeds = allPasses.map(p => p.travelSpeed).filter(s => s > 0);
-
-    return {
-      totalPasses: allPasses.length,
-      totalLayers: procedure.layers.length,
-      averageHeatInput: heatInputs.length > 0 ? heatInputs.reduce((a, b) => a + b, 0) / heatInputs.length : 0,
-      minHeatInput: heatInputs.length > 0 ? Math.min(...heatInputs) : 0,
-      maxHeatInput: heatInputs.length > 0 ? Math.max(...heatInputs) : 0,
-      averageCurrent: currents.length > 0 ? currents.reduce((a, b) => a + b, 0) / currents.length : 0,
-      averageVoltage: voltages.length > 0 ? voltages.reduce((a, b) => a + b, 0) / voltages.length : 0,
-      averageTravelSpeed: speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0,
-    };
-  };
-
-  const stats = calculateStatistics(currentProcedure);
 
   const handleSaveBasicInfo = () => {
     if (!formData.procedureNumber || !formData.projectName) {
@@ -328,6 +280,72 @@ export function ProcedureDetail() {
   const isTimerRunning = (passId: string) => {
     return timers[passId]?.isRunning === true;
   };
+
+  const getLiveTravelSpeed = (pass: WeldPass, passId: string) => {
+    const timer = timers[passId];
+    const weldLength = Number(pass.weldLength) || 0;
+    if (timer && timer.isRunning && Number.isFinite(timer.elapsed) && timer.elapsed > 0 && weldLength > 0) {
+      return calculateTravelSpeed(weldLength, timer.elapsed);
+    }
+    return Number(pass.travelSpeed) || 0;
+  };
+
+  const getLiveHeatInput = (pass: WeldPass, passId: string) => {
+    const travelSpeed = getLiveTravelSpeed(pass, passId);
+    if (travelSpeed > 0) {
+      return calculateHeatInput(Number(pass.current) || 0, Number(pass.voltage) || 0, travelSpeed);
+    }
+    return Number(pass.heatInput) || 0;
+  };
+
+  // 计算统计数据（以计时器显示时间为准）
+  const calculateStatistics = (procedure: WeldingProcedure | null): Statistics => {
+    if (!procedure || procedure.layers.length === 0) {
+      return {
+        totalPasses: 0,
+        totalLayers: 0,
+        averageHeatInput: 0,
+        minHeatInput: 0,
+        maxHeatInput: 0,
+        averageCurrent: 0,
+        averageVoltage: 0,
+        averageTravelSpeed: 0,
+      };
+    }
+
+    const allPasses = procedure.layers.flatMap(layer => layer.passes);
+    
+    if (allPasses.length === 0) {
+      return {
+        totalPasses: 0,
+        totalLayers: procedure.layers.length,
+        averageHeatInput: 0,
+        minHeatInput: 0,
+        maxHeatInput: 0,
+        averageCurrent: 0,
+        averageVoltage: 0,
+        averageTravelSpeed: 0,
+      };
+    }
+
+    const heatInputs = allPasses.map(p => getLiveHeatInput(p, p.id)).filter(h => h > 0);
+    const currents = allPasses.map(p => Number(p.current) || 0).filter(c => c > 0);
+    const voltages = allPasses.map(p => Number(p.voltage) || 0).filter(v => v > 0);
+    const speeds = allPasses.map(p => getLiveTravelSpeed(p, p.id)).filter(s => s > 0);
+
+    return {
+      totalPasses: allPasses.length,
+      totalLayers: procedure.layers.length,
+      averageHeatInput: heatInputs.length > 0 ? heatInputs.reduce((a, b) => a + b, 0) / heatInputs.length : 0,
+      minHeatInput: heatInputs.length > 0 ? Math.min(...heatInputs) : 0,
+      maxHeatInput: heatInputs.length > 0 ? Math.max(...heatInputs) : 0,
+      averageCurrent: currents.length > 0 ? currents.reduce((a, b) => a + b, 0) / currents.length : 0,
+      averageVoltage: voltages.length > 0 ? voltages.reduce((a, b) => a + b, 0) / voltages.length : 0,
+      averageTravelSpeed: speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0,
+    };
+  };
+
+  const stats = calculateStatistics(currentProcedure);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -631,20 +649,20 @@ export function ProcedureDetail() {
                             </td>
                             <td className="px-4 py-3">
                               <div className={`px-3 py-1.5 rounded font-mono font-semibold text-right ${
-                                (pass.travelSpeed || 0) > 0 
+                                getLiveTravelSpeed(pass, pass.id) > 0 
                                   ? 'bg-teal-100 text-teal-700' 
                                   : 'bg-slate-100 text-slate-400'
                               }`}>
-                                {(Number(pass.travelSpeed) || 0).toFixed(2)}
+                                {getLiveTravelSpeed(pass, pass.id).toFixed(2)}
                               </div>
                             </td>
                             <td className="px-4 py-3">
                               <div className={`px-3 py-1.5 rounded font-mono font-semibold text-right ${
-                                (pass.heatInput || 0) > 0 
+                                getLiveHeatInput(pass, pass.id) > 0 
                                   ? 'bg-blue-100 text-blue-700' 
                                   : 'bg-slate-100 text-slate-400'
                               }`}>
-                                {(Number(pass.heatInput) || 0).toFixed(3)}
+                                {getLiveHeatInput(pass, pass.id).toFixed(3)}
                               </div>
                             </td>
                             <td className="px-4 py-3">
