@@ -212,11 +212,11 @@ export function updatePass(
   const pass = layer.passes.find(p => p.id === passId);
   if (!pass) return null;
   
-  // 确保所有输入是有效数字
+  // 确保所有输入是有效数字，duration取整跟显示一致
   const current = Number(data.current) || 0;
   const voltage = Number(data.voltage) || 0;
   const weldLength = Number(data.weldLength) || 0;
-  const duration = Number(data.duration) || 0;
+  const duration = Math.floor(Number(data.duration)) || 0;
   
   const travelSpeed = calculateTravelSpeed(weldLength, duration);
   const heatInput = calculateHeatInput(current, voltage, travelSpeed);

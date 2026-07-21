@@ -192,7 +192,7 @@ export function ProcedureDetail() {
           finalElapsed += (Date.now() - timer.startTime) / 1000;
         }
       }
-      finalElapsed = Math.round(finalElapsed * 10) / 10;
+      finalElapsed = Math.floor(finalElapsed);
 
       // 更新 timer state
       setTimers(prev => ({
