@@ -285,7 +285,11 @@ export function ProcedureDetail() {
     const timer = timers[passId];
     const weldLength = Number(pass.weldLength) || 0;
     if (timer && timer.isRunning && Number.isFinite(timer.elapsed) && timer.elapsed > 0 && weldLength > 0) {
-      return calculateTravelSpeed(weldLength, timer.elapsed);
+      // 使用跟计时器显示一致的取整秒数（formatDuration 使用 Math.floor）
+      const displayedSeconds = Math.floor(timer.elapsed);
+      if (displayedSeconds > 0) {
+        return calculateTravelSpeed(weldLength, displayedSeconds);
+      }
     }
     return Number(pass.travelSpeed) || 0;
   };
