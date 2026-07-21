@@ -42,27 +42,45 @@ export function ProcedureDetail() {
     }
   }, [id, loadProcedure]);
 
+  // 增量同步 timers：为新增的 pass 添加默认值，保留已有计时器状态
   useEffect(() => {
-    if (currentProcedure) {
-      const initialTimers: Record<string, { isRunning: boolean; elapsed: number; startTime: number | null }> = {};
+    if (!currentProcedure) return;
+    setTimers(prev => {
+      const next = { ...prev };
       currentProcedure.layers.forEach(layer => {
         layer.passes.forEach(pass => {
-          initialTimers[pass.id] = {
-            isRunning: false,
-            elapsed: pass.duration || 0,
-            startTime: null,
-          };
+          if (!next[pass.id]) {
+            // 新 pass，初始化
+            next[pass.id] = {
+              isRunning: false,
+              elapsed: Number(pass.duration) || 0,
+              startTime: null,
+            };
+          }
         });
       });
-      setTimers(initialTimers);
-    }
+      // 清理已删除 pass 的 timer
+      const validIds = new Set(
+        currentProcedure.layers.flatMap(l => l.passes.map(p => p.id))
+      );
+      Object.keys(next).forEach(pid => {
+        if (!validIds.has(pid)) {
+          delete next[pid];
+        }
+      });
+      return next;
+    });
+  }, [currentProcedure]);
+
+  // 组件卸载时清理所有计时器
+  useEffect(() => {
     return () => {
       Object.values(timerIntervalRef.current).forEach(intervalId => {
         clearInterval(intervalId);
       });
       timerIntervalRef.current = {};
     };
-  }, [currentProcedure?.id]);
+  }, []);
 
   const calculateStatistics = (procedure: WeldingProcedure | null): Statistics => {
     if (!procedure || procedure.layers.length === 0) {
@@ -142,64 +160,55 @@ export function ProcedureDetail() {
       ?.passes.find(p => p.id === passId);
     
     if (pass) {
-      const newDuration = field === 'duration' ? numValue : pass.duration;
-      const newWeldLength = field === 'weldLength' ? numValue : pass.weldLength;
-      
-      if (field === 'duration' || field === 'weldLength') {
-        setTimers(prev => ({
-          ...prev,
-          [passId]: {
-            ...prev[passId],
-            elapsed: field === 'duration' ? numValue : prev[passId]?.elapsed || 0,
-          }
-        }));
-      }
+      const newWeldLength = field === 'weldLength' ? numValue : (pass.weldLength || 0);
+      // 使用计时器的当前 elapsed 值，确保与显示一致
+      const currentTimer = timers[passId];
+      const currentDuration = currentTimer && Number.isFinite(currentTimer.elapsed) 
+        ? currentTimer.elapsed 
+        : (pass.duration || 0);
       
       updatePass(currentProcedure.id, layerId, passId, {
-        current: field === 'current' ? numValue : pass.current,
-        voltage: field === 'voltage' ? numValue : pass.voltage,
+        current: field === 'current' ? numValue : (pass.current || 0),
+        voltage: field === 'voltage' ? numValue : (pass.voltage || 0),
         weldLength: newWeldLength,
-        duration: newDuration,
+        duration: currentDuration,
       });
     }
   };
 
-  const startTimer = (passId: string, layerId: string) => {
-    if (!currentProcedure) return;
-    
-    const pass = currentProcedure.layers
-      .find(l => l.id === layerId)
-      ?.passes.find(p => p.id === passId);
-    
-    if (!pass) return;
-
-    setTimers(prev => ({
-      ...prev,
-      [passId]: {
-        ...prev[passId],
-        isRunning: true,
-        startTime: Date.now(),
-      }
-    }));
+  const startTimer = (passId: string) => {
+    setTimers(prev => {
+      const existing = prev[passId];
+      // 确保有完整的 timer 对象，elapsed 必须是有效数字
+      const elapsed = existing && Number.isFinite(existing.elapsed) ? existing.elapsed : 0;
+      return {
+        ...prev,
+        [passId]: {
+          isRunning: true,
+          elapsed,
+          startTime: Date.now(),
+        }
+      };
+    });
 
     timerIntervalRef.current[passId] = window.setInterval(() => {
       setTimers(prev => {
         const timer = prev[passId];
-        if (!timer || !timer.startTime || !timer.isRunning) return prev;
+        if (!timer || !timer.isRunning || !timer.startTime) return prev;
         
         const now = Date.now();
-        const elapsed = timer.elapsed + (now - timer.startTime) / 1000;
+        const delta = (now - timer.startTime) / 1000;
         
         return {
           ...prev,
           [passId]: {
-            ...timer,
-            elapsed,
+            isRunning: true,
+            elapsed: timer.elapsed + delta,
             startTime: now,
           }
         };
       });
-    }, 100);
+    }, 200);
   };
 
   const pauseTimer = (passId: string, layerId: string) => {
@@ -210,38 +219,40 @@ export function ProcedureDetail() {
       delete timerIntervalRef.current[passId];
     }
 
-    setTimers(prev => {
-      const timer = prev[passId];
-      if (!timer) return prev;
-      
-      let finalElapsed = timer.elapsed;
+    // 先计算最终时间，再更新 state 和 storage
+    const timer = timers[passId];
+    let finalElapsed = 0;
+    if (timer) {
+      finalElapsed = Number(timer.elapsed) || 0;
       if (timer.isRunning && timer.startTime) {
-        finalElapsed = timer.elapsed + (Date.now() - timer.startTime) / 1000;
+        finalElapsed += (Date.now() - timer.startTime) / 1000;
       }
-      
-      const pass = currentProcedure.layers
-        .find(l => l.id === layerId)
-        ?.passes.find(p => p.id === passId);
-      
-      if (pass) {
-        updatePass(currentProcedure.id, layerId, passId, {
-          current: pass.current,
-          voltage: pass.voltage,
-          weldLength: pass.weldLength,
-          duration: Math.round(finalElapsed * 10) / 10,
-        });
+    }
+    finalElapsed = Math.round(finalElapsed * 10) / 10;
+
+    // 更新 timer state（纯函数，无副作用）
+    setTimers(prev => ({
+      ...prev,
+      [passId]: {
+        isRunning: false,
+        elapsed: finalElapsed,
+        startTime: null,
       }
-      
-      return {
-        ...prev,
-        [passId]: {
-          ...timer,
-          isRunning: false,
-          startTime: null,
-          elapsed: finalElapsed,
-        }
-      };
-    });
+    }));
+
+    // 在 setTimers 之外执行副作用
+    const pass = currentProcedure.layers
+      .find(l => l.id === layerId)
+      ?.passes.find(p => p.id === passId);
+    
+    if (pass) {
+      updatePass(currentProcedure.id, layerId, passId, {
+        current: pass.current || 0,
+        voltage: pass.voltage || 0,
+        weldLength: pass.weldLength || 0,
+        duration: finalElapsed,
+      });
+    }
   };
 
   const resetTimer = (passId: string, layerId: string) => {
@@ -252,6 +263,7 @@ export function ProcedureDetail() {
       delete timerIntervalRef.current[passId];
     }
 
+    // 先更新 timer state（纯函数，无副作用）
     setTimers(prev => ({
       ...prev,
       [passId]: {
@@ -261,15 +273,16 @@ export function ProcedureDetail() {
       }
     }));
 
+    // 在 setTimers 之外执行副作用
     const pass = currentProcedure.layers
       .find(l => l.id === layerId)
       ?.passes.find(p => p.id === passId);
     
     if (pass) {
       updatePass(currentProcedure.id, layerId, passId, {
-        current: pass.current,
-        voltage: pass.voltage,
-        weldLength: pass.weldLength,
+        current: pass.current || 0,
+        voltage: pass.voltage || 0,
+        weldLength: pass.weldLength || 0,
         duration: 0,
       });
     }
@@ -288,11 +301,13 @@ export function ProcedureDetail() {
   const getTimerDisplay = (passId: string) => {
     const timer = timers[passId];
     if (!timer) return '00:00';
-    return formatDuration(timer.elapsed);
+    const elapsed = Number(timer.elapsed);
+    if (!Number.isFinite(elapsed)) return '00:00';
+    return formatDuration(elapsed);
   };
 
   const isTimerRunning = (passId: string) => {
-    return timers[passId]?.isRunning || false;
+    return timers[passId]?.isRunning === true;
   };
 
   return (
@@ -570,7 +585,7 @@ export function ProcedureDetail() {
                                 <div className="flex items-center space-x-1">
                                   {!isTimerRunning(pass.id) ? (
                                     <button
-                                      onClick={() => startTimer(pass.id, layer.id)}
+                                      onClick={() => startTimer(pass.id)}
                                       className="p-1.5 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
                                       title="开始计时"
                                     >

@@ -8,11 +8,14 @@ export function calculateTravelSpeed(
   weldLength: number,
   durationSeconds: number
 ): number {
-  if (durationSeconds <= 0 || weldLength <= 0) {
+  // 处理无效输入（undefined, NaN, 负数等）
+  const len = Number(weldLength);
+  const dur = Number(durationSeconds);
+  if (!Number.isFinite(len) || !Number.isFinite(dur) || dur <= 0 || len <= 0) {
     return 0;
   }
-  const durationMinutes = durationSeconds / 60;
-  return weldLength / durationMinutes;
+  const durationMinutes = dur / 60;
+  return len / durationMinutes;
 }
 
 /**
@@ -28,10 +31,13 @@ export function calculateHeatInput(
   voltage: number,
   travelSpeed: number
 ): number {
-  if (travelSpeed <= 0) {
+  const c = Number(current);
+  const v = Number(voltage);
+  const s = Number(travelSpeed);
+  if (!Number.isFinite(s) || s <= 0) {
     return 0;
   }
-  return (current * voltage * 60) / (travelSpeed * 1000);
+  return (c * v * 60) / (s * 1000);
 }
 
 /**
