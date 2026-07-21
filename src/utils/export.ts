@@ -21,7 +21,16 @@ export function exportToExcel(procedure: WeldingProcedure): void {
   ];
   
   // 创建参数数据表头
-  const paramHeader = ['层号', '道号', '焊接电流(A)', '焊接电压(V)', '焊接速度(mm/min)', '热输入(J/mm)'];
+  const paramHeader = [
+    '层号', 
+    '道号', 
+    '焊接电流(A)', 
+    '焊接电压(V)', 
+    '焊缝长度(cm)', 
+    '焊接时长(秒)', 
+    '焊接速度(cm/min)', 
+    '热输入(kJ/cm)'
+  ];
   const paramData: (string | number)[][] = [paramHeader];
   
   // 填充参数数据
@@ -32,8 +41,10 @@ export function exportToExcel(procedure: WeldingProcedure): void {
         pass.passNumber,
         pass.current,
         pass.voltage,
-        pass.travelSpeed,
-        Number(pass.heatInput.toFixed(2))
+        pass.weldLength,
+        Number(pass.duration.toFixed(1)),
+        Number(pass.travelSpeed.toFixed(2)),
+        Number(pass.heatInput.toFixed(3))
       ]);
     });
   });
@@ -47,12 +58,12 @@ export function exportToExcel(procedure: WeldingProcedure): void {
     ['统计信息'],
     ['总层数', stats.totalLayers],
     ['总道数', stats.totalPasses],
-    ['平均热输入(J/mm)', Number(stats.averageHeatInput.toFixed(2))],
-    ['最小热输入(J/mm)', Number(stats.minHeatInput.toFixed(2))],
-    ['最大热输入(J/mm)', Number(stats.maxHeatInput.toFixed(2))],
+    ['平均热输入(kJ/cm)', Number(stats.averageHeatInput.toFixed(3))],
+    ['最小热输入(kJ/cm)', Number(stats.minHeatInput.toFixed(3))],
+    ['最大热输入(kJ/cm)', Number(stats.maxHeatInput.toFixed(3))],
     ['平均电流(A)', Number(stats.averageCurrent.toFixed(2))],
     ['平均电压(V)', Number(stats.averageVoltage.toFixed(2))],
-    ['平均速度(mm/min)', Number(stats.averageTravelSpeed.toFixed(2))],
+    ['平均速度(cm/min)', Number(stats.averageTravelSpeed.toFixed(2))],
   ];
   
   // 合并所有数据
@@ -63,11 +74,13 @@ export function exportToExcel(procedure: WeldingProcedure): void {
   
   // 设置列宽
   ws['!cols'] = [
+    { wch: 12 },
+    { wch: 12 },
     { wch: 15 },
-    { wch: 20 },
     { wch: 15 },
     { wch: 15 },
-    { wch: 20 },
+    { wch: 15 },
+    { wch: 18 },
     { wch: 15 },
   ];
   

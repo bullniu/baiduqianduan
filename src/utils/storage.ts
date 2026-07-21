@@ -1,4 +1,5 @@
 import { WeldingProcedure } from '@/types';
+import { calculateTravelSpeed, calculateHeatInput } from './calculation';
 
 const STORAGE_KEY = 'welding_procedures';
 
@@ -159,6 +160,8 @@ export function addPass(procedureId: string, layerId: string): WeldingProcedure 
     passNumber,
     current: 0,
     voltage: 0,
+    weldLength: 0,
+    duration: 0,
     travelSpeed: 0,
     heatInput: 0,
     createdAt: new Date().toISOString(),
@@ -182,7 +185,7 @@ export function updatePass(
   procedureId: string,
   layerId: string,
   passId: string,
-  data: { current: number; voltage: number; travelSpeed: number }
+  data: { current: number; voltage: number; weldLength: number; duration: number }
 ): WeldingProcedure | null {
   const procedure = getProcedureById(procedureId);
   if (!procedure) return null;
@@ -193,14 +196,14 @@ export function updatePass(
   const pass = layer.passes.find(p => p.id === passId);
   if (!pass) return null;
   
-  // 计算热输入
-  const heatInput = data.travelSpeed > 0 
-    ? (data.current * data.voltage * 60) / data.travelSpeed 
-    : 0;
+  const travelSpeed = calculateTravelSpeed(data.weldLength, data.duration);
+  const heatInput = calculateHeatInput(data.current, data.voltage, travelSpeed);
   
   pass.current = data.current;
   pass.voltage = data.voltage;
-  pass.travelSpeed = data.travelSpeed;
+  pass.weldLength = data.weldLength;
+  pass.duration = data.duration;
+  pass.travelSpeed = travelSpeed;
   pass.heatInput = heatInput;
   
   procedure.updatedAt = new Date().toISOString();

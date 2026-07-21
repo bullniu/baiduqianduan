@@ -46,7 +46,7 @@ interface ProcedureState {
     procedureId: string,
     layerId: string,
     passId: string,
-    data: { current: number; voltage: number; travelSpeed: number }
+    data: { current: number; voltage: number; weldLength: number; duration: number }
   ) => void;
   
   // 删除道次

@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, Plus, Trash2, Save, Download, 
-  Layers, Zap, Activity, TrendingUp, BarChart3 
+  Layers, Zap, Activity, TrendingUp, BarChart3,
+  Play, Pause, RotateCcw, Clock, Ruler
 } from 'lucide-react';
 import { useProcedureStore } from '@/store';
 import { WeldingProcedure, WeldPass, Statistics } from '@/types';
 import { exportToExcel } from '@/utils/export';
+import { formatDuration } from '@/utils/calculation';
 
 export function ProcedureDetail() {
   const { id } = useParams<{ id: string }>();
@@ -31,13 +33,37 @@ export function ProcedureDetail() {
     weldType: '',
   });
 
+  const [timers, setTimers] = useState<Record<string, { isRunning: boolean; elapsed: number; startTime: number | null }>>({});
+  const timerIntervalRef = useRef<Record<string, number>>({});
+
   useEffect(() => {
     if (id && id !== 'new') {
       loadProcedure(id);
     }
   }, [id, loadProcedure]);
 
-  // 计算统计数据
+  useEffect(() => {
+    if (currentProcedure) {
+      const initialTimers: Record<string, { isRunning: boolean; elapsed: number; startTime: number | null }> = {};
+      currentProcedure.layers.forEach(layer => {
+        layer.passes.forEach(pass => {
+          initialTimers[pass.id] = {
+            isRunning: false,
+            elapsed: pass.duration || 0,
+            startTime: null,
+          };
+        });
+      });
+      setTimers(initialTimers);
+    }
+    return () => {
+      Object.values(timerIntervalRef.current).forEach(intervalId => {
+        clearInterval(intervalId);
+      });
+      timerIntervalRef.current = {};
+    };
+  }, [currentProcedure?.id]);
+
   const calculateStatistics = (procedure: WeldingProcedure | null): Statistics => {
     if (!procedure || procedure.layers.length === 0) {
       return {
@@ -86,7 +112,6 @@ export function ProcedureDetail() {
 
   const stats = calculateStatistics(currentProcedure);
 
-  // 保存基础信息
   const handleSaveBasicInfo = () => {
     if (!formData.procedureNumber || !formData.projectName) {
       alert('请填写工艺评定编号和项目名称');
@@ -103,7 +128,6 @@ export function ProcedureDetail() {
     }
   };
 
-  // 处理参数变更
   const handlePassChange = (
     layerId: string,
     passId: string,
@@ -118,24 +142,161 @@ export function ProcedureDetail() {
       ?.passes.find(p => p.id === passId);
     
     if (pass) {
+      const newDuration = field === 'duration' ? numValue : pass.duration;
+      const newWeldLength = field === 'weldLength' ? numValue : pass.weldLength;
+      
+      if (field === 'duration' || field === 'weldLength') {
+        setTimers(prev => ({
+          ...prev,
+          [passId]: {
+            ...prev[passId],
+            elapsed: field === 'duration' ? numValue : prev[passId]?.elapsed || 0,
+          }
+        }));
+      }
+      
       updatePass(currentProcedure.id, layerId, passId, {
         current: field === 'current' ? numValue : pass.current,
         voltage: field === 'voltage' ? numValue : pass.voltage,
-        travelSpeed: field === 'travelSpeed' ? numValue : pass.travelSpeed,
+        weldLength: newWeldLength,
+        duration: newDuration,
       });
     }
   };
 
-  // 导出Excel
+  const startTimer = (passId: string, layerId: string) => {
+    if (!currentProcedure) return;
+    
+    const pass = currentProcedure.layers
+      .find(l => l.id === layerId)
+      ?.passes.find(p => p.id === passId);
+    
+    if (!pass) return;
+
+    setTimers(prev => ({
+      ...prev,
+      [passId]: {
+        ...prev[passId],
+        isRunning: true,
+        startTime: Date.now(),
+      }
+    }));
+
+    timerIntervalRef.current[passId] = window.setInterval(() => {
+      setTimers(prev => {
+        const timer = prev[passId];
+        if (!timer || !timer.startTime || !timer.isRunning) return prev;
+        
+        const now = Date.now();
+        const elapsed = timer.elapsed + (now - timer.startTime) / 1000;
+        
+        return {
+          ...prev,
+          [passId]: {
+            ...timer,
+            elapsed,
+            startTime: now,
+          }
+        };
+      });
+    }, 100);
+  };
+
+  const pauseTimer = (passId: string, layerId: string) => {
+    if (!currentProcedure) return;
+    
+    if (timerIntervalRef.current[passId]) {
+      clearInterval(timerIntervalRef.current[passId]);
+      delete timerIntervalRef.current[passId];
+    }
+
+    setTimers(prev => {
+      const timer = prev[passId];
+      if (!timer) return prev;
+      
+      let finalElapsed = timer.elapsed;
+      if (timer.isRunning && timer.startTime) {
+        finalElapsed = timer.elapsed + (Date.now() - timer.startTime) / 1000;
+      }
+      
+      const pass = currentProcedure.layers
+        .find(l => l.id === layerId)
+        ?.passes.find(p => p.id === passId);
+      
+      if (pass) {
+        updatePass(currentProcedure.id, layerId, passId, {
+          current: pass.current,
+          voltage: pass.voltage,
+          weldLength: pass.weldLength,
+          duration: Math.round(finalElapsed * 10) / 10,
+        });
+      }
+      
+      return {
+        ...prev,
+        [passId]: {
+          ...timer,
+          isRunning: false,
+          startTime: null,
+          elapsed: finalElapsed,
+        }
+      };
+    });
+  };
+
+  const resetTimer = (passId: string, layerId: string) => {
+    if (!currentProcedure) return;
+    
+    if (timerIntervalRef.current[passId]) {
+      clearInterval(timerIntervalRef.current[passId]);
+      delete timerIntervalRef.current[passId];
+    }
+
+    setTimers(prev => ({
+      ...prev,
+      [passId]: {
+        isRunning: false,
+        elapsed: 0,
+        startTime: null,
+      }
+    }));
+
+    const pass = currentProcedure.layers
+      .find(l => l.id === layerId)
+      ?.passes.find(p => p.id === passId);
+    
+    if (pass) {
+      updatePass(currentProcedure.id, layerId, passId, {
+        current: pass.current,
+        voltage: pass.voltage,
+        weldLength: pass.weldLength,
+        duration: 0,
+      });
+    }
+  };
+
+  const handleAddPass = (procedureId: string, layerId: string) => {
+    addPass(procedureId, layerId);
+  };
+
   const handleExport = () => {
     if (currentProcedure) {
       exportToExcel(currentProcedure);
     }
   };
 
+  const getTimerDisplay = (passId: string) => {
+    const timer = timers[passId];
+    if (!timer) return '00:00';
+    return formatDuration(timer.elapsed);
+  };
+
+  const isTimerRunning = (passId: string) => {
+    return timers[passId]?.isRunning || false;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* 头部 */}
       <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -172,7 +333,6 @@ export function ProcedureDetail() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 基础信息表单 */}
         {(isEditing || !currentProcedure) && (
           <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-slate-200">
             <h2 className="text-lg font-semibold text-slate-800 mb-4">基础信息</h2>
@@ -238,7 +398,6 @@ export function ProcedureDetail() {
           </div>
         )}
 
-        {/* 统计面板 */}
         {currentProcedure && currentProcedure.layers.length > 0 && (
           <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-slate-200">
             <div className="flex items-center space-x-2 mb-4">
@@ -266,7 +425,7 @@ export function ProcedureDetail() {
                   <span className="text-sm text-slate-600">平均热输入</span>
                 </div>
                 <p className="text-2xl font-bold text-green-700 font-mono">
-                  {stats.averageHeatInput.toFixed(2)} <span className="text-sm">J/mm</span>
+                  {stats.averageHeatInput.toFixed(2)} <span className="text-sm">kJ/cm</span>
                 </p>
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4">
@@ -275,18 +434,16 @@ export function ProcedureDetail() {
                   <span className="text-sm text-slate-600">热输入范围</span>
                 </div>
                 <p className="text-lg font-bold text-purple-700 font-mono">
-                  {stats.minHeatInput.toFixed(1)} - {stats.maxHeatInput.toFixed(1)}
-                  <span className="text-sm ml-1">J/mm</span>
+                  {stats.minHeatInput.toFixed(2)} - {stats.maxHeatInput.toFixed(2)}
+                  <span className="text-sm ml-1">kJ/cm</span>
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* 参数记录区域 */}
         {currentProcedure && (
           <div className="space-y-4">
-            {/* 添加层按钮 */}
             <button
               onClick={() => addLayer(currentProcedure.id)}
               className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-white border-2 border-dashed border-slate-300 text-slate-600 rounded-lg hover:border-blue-400 hover:text-blue-600 transition-colors"
@@ -295,10 +452,8 @@ export function ProcedureDetail() {
               <span className="font-medium">添加焊接层</span>
             </button>
 
-            {/* 层道列表 */}
             {currentProcedure.layers.map((layer) => (
               <div key={layer.id} className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
-                {/* 层标题 */}
                 <div className="px-6 py-4 bg-gradient-to-r from-slate-800 to-slate-700 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Layers className="w-5 h-5 text-orange-400" />
@@ -306,7 +461,7 @@ export function ProcedureDetail() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => addPass(currentProcedure.id, layer.id)}
+                      onClick={() => handleAddPass(currentProcedure.id, layer.id)}
                       className="px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm flex items-center space-x-1"
                     >
                       <Plus className="w-4 h-4" />
@@ -325,7 +480,6 @@ export function ProcedureDetail() {
                   </div>
                 </div>
 
-                {/* 参数表格 */}
                 {layer.passes.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full">
@@ -341,10 +495,16 @@ export function ProcedureDetail() {
                             焊接电压 (V)
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                            焊接速度 (mm/min)
+                            焊缝长度 (cm)
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                            热输入 (J/mm)
+                            计时器
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                            焊接速度 (cm/min)
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                            热输入 (kJ/cm)
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             操作
@@ -383,14 +543,70 @@ export function ProcedureDetail() {
                               />
                             </td>
                             <td className="px-4 py-3">
-                              <input
-                                type="number"
-                                value={pass.travelSpeed || ''}
-                                onChange={(e) => handlePassChange(layer.id, pass.id, 'travelSpeed', e.target.value)}
-                                className="w-24 px-2 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-right"
-                                placeholder="0"
-                                step="0.1"
-                              />
+                              <div className="flex items-center space-x-1">
+                                <Ruler className="w-4 h-4 text-slate-400" />
+                                <input
+                                  type="number"
+                                  value={pass.weldLength || ''}
+                                  onChange={(e) => handlePassChange(layer.id, pass.id, 'weldLength', e.target.value)}
+                                  className="w-20 px-2 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-right"
+                                  placeholder="0"
+                                  step="0.1"
+                                />
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center space-x-2">
+                                <div className={`px-3 py-1.5 rounded font-mono font-bold text-lg min-w-[70px] text-center ${
+                                  isTimerRunning(pass.id)
+                                    ? 'bg-green-100 text-green-700 animate-pulse'
+                                    : 'bg-slate-100 text-slate-600'
+                                }`}>
+                                  <div className="flex items-center justify-center space-x-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>{getTimerDisplay(pass.id)}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  {!isTimerRunning(pass.id) ? (
+                                    <button
+                                      onClick={() => startTimer(pass.id, layer.id)}
+                                      className="p-1.5 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                                      title="开始计时"
+                                    >
+                                      <Play className="w-4 h-4" />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => pauseTimer(pass.id, layer.id)}
+                                      className="p-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
+                                      title="暂停计时"
+                                    >
+                                      <Pause className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => {
+                                      if (confirm('确定要重置计时器吗？')) {
+                                        resetTimer(pass.id, layer.id);
+                                      }
+                                    }}
+                                    className="p-1.5 bg-slate-400 text-white rounded hover:bg-slate-500 transition-colors"
+                                    title="重置计时器"
+                                  >
+                                    <RotateCcw className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className={`px-3 py-1.5 rounded font-mono font-semibold text-right ${
+                                pass.travelSpeed > 0 
+                                  ? 'bg-teal-100 text-teal-700' 
+                                  : 'bg-slate-100 text-slate-400'
+                              }`}>
+                                {pass.travelSpeed.toFixed(2)}
+                              </div>
                             </td>
                             <td className="px-4 py-3">
                               <div className={`px-3 py-1.5 rounded font-mono font-semibold text-right ${
@@ -398,7 +614,7 @@ export function ProcedureDetail() {
                                   ? 'bg-blue-100 text-blue-700' 
                                   : 'bg-slate-100 text-slate-400'
                               }`}>
-                                {pass.heatInput.toFixed(2)}
+                                {pass.heatInput.toFixed(3)}
                               </div>
                             </td>
                             <td className="px-4 py-3">

@@ -24,8 +24,10 @@ export interface WeldPass {
   passNumber: number;
   current: number;          // 焊接电流(A)
   voltage: number;          // 焊接电压(V)
-  travelSpeed: number;      // 焊接速度(mm/min)
-  heatInput: number;        // 热输入(J/mm) - 自动计算
+  weldLength: number;       // 焊缝长度(cm)
+  duration: number;         // 焊接时长(秒)
+  travelSpeed: number;      // 焊接速度(cm/min) - 自动计算
+  heatInput: number;        // 热输入(kJ/cm) - 自动计算
   createdAt: string;
 }
 
